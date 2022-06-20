@@ -1,5 +1,3 @@
-mod knn;
-
 use std::path::Path;
 
 use csv::{self, Error, ReaderBuilder};
