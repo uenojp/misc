@@ -10,7 +10,7 @@ use serde::Deserialize;
 // ref. http://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+%28Diagnostic%29
 #[derive(Debug, Deserialize)]
 pub struct CellNucleus {
-    id: String,
+    id: i32,
     diagnosis: Diagnosis,
     features: Vec<f64>,
 }
@@ -61,9 +61,13 @@ fn main() -> Result<(), Error> {
     let trainings = read_data_set("data/training.data")?;
     let tests = read_data_set("data/test.data")?;
 
+    println!("{:>10} {:>8} {:>8}", "ID", "Expected", "Result");
     for test in tests {
-        let result = classify(&trainings, &test.features, 3);
-        println!("Expected {:?}, Result {:?}", test.diagnosis, result);
+        let result = classify(&trainings, &test.features, 9);
+        println!(
+            "{:>10}        {:?}        {:?}",
+            test.id, test.diagnosis, result
+        );
     }
 
     Ok(())
