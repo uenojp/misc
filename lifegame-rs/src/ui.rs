@@ -23,6 +23,6 @@ impl fmt::Display for Game {
                 .as_str();
             s += "\n"
         }
-        write!(f, "{}", s)
+        write!(f, "{}", &s[..s.len()-1])
     }
 }
