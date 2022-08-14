@@ -4,7 +4,7 @@ use image::{Rgb, RgbImage};
 use rayon::prelude::*;
 
 const WIDTH: u32 = 1500;
-const HEIGHT: u32 = 1500;
+const HEIGHT: u32 = 750;
 
 fn color(ray: &Ray) -> Color {
     let direction = ray.direction.normalize();
@@ -13,11 +13,11 @@ fn color(ray: &Ray) -> Color {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let camera = Camera::new(
-        Vec3::new(4.0, 0.0, 0.0),
-        Vec3::new(0.0, 2.0, 0.0),
-        Vec3::new(-2.0, -1.0, -1.0),
-    );
+    // let camera = Camera::new(
+    //     Vec3::new(4.0, 0.0, 0.0),
+    //     Vec3::new(0.0, 2.0, 0.0),
+    //     Vec3::new(-2.0, -1.0, -1.0),
+    // );
 
     // カメラは原点
     // 対象物はカメラから10離れた場所
