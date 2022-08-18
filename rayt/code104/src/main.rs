@@ -12,7 +12,7 @@ fn hit_sphere(center: Point3, radius: f64, ray: &Ray) -> Option<f64> {
     let c = oc.dot(oc) - radius.powi(2);
     let discriminant = b * b - a * c;
     if 0.0 <= discriminant {
-        Some((-b - discriminant) / a)
+        Some((-b - discriminant.sqrt()) / a)
     } else {
         None
     }
