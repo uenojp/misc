@@ -1,11 +1,12 @@
 use std::path::Path;
 
-use crate::{Camera, Color, Ray, Point3};
+use crate::{Camera, Color, Point3, Ray};
 
 use image::{ImageResult, Rgb, RgbImage};
 use rayon::prelude::*;
 
 const SAMPLE_PER_PIXEL: usize = 100;
+const GAMMA_FACTOR: f64 = 2.2;
 
 pub trait Scene {
     fn camera(&self) -> Camera;
@@ -57,7 +58,7 @@ pub fn render_aa<S: Scene + Sync, P: AsRef<Path>>(path: P, scene: S) -> ImageRes
                 color += scene.trace(&ray);
             }
             color /= scene.spp() as f64;
-            let rgb = color.to_rgb();
+            let rgb = color.gamma(GAMMA_FACTOR).to_rgb();
             pixel[0] = rgb[0];
             pixel[1] = rgb[1];
             pixel[2] = rgb[2];
