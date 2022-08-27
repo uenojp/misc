@@ -5,7 +5,7 @@ use crate::{Camera, Color, Ray, Point3};
 use image::{ImageResult, Rgb, RgbImage};
 use rayon::prelude::*;
 
-const SAMPLE_PER_PIXEX: usize = 8;
+const SAMPLE_PER_PIXEL: usize = 100;
 
 pub trait Scene {
     fn camera(&self) -> Camera;
@@ -13,7 +13,7 @@ pub trait Scene {
     fn width(&self) -> u32;
     fn height(&self) -> u32;
     fn spp(&self) -> usize {
-        SAMPLE_PER_PIXEX
+        SAMPLE_PER_PIXEL
     }
     fn aspect(&self) -> f64 {
         self.width() as f64 / self.height() as f64
