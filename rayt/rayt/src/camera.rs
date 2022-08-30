@@ -58,7 +58,7 @@ impl Camera {
         let y = z.cross(x).normalize();
 
         // fov(field of view)
-        let halfh = (viewfov * 0.5).tan();
+        let halfh = (viewfov.to_radians() * 0.5).tan();
         let halfw = halfh * aspect;
 
         Self {
@@ -72,7 +72,7 @@ impl Camera {
     pub fn ray(&self, u: f64, v: f64) -> Ray {
         Ray {
             origin: self.origin,
-            direction: self.w + u * self.u + v * self.v,
+            direction: self.w + u * self.u + v * self.v - self.origin,
         }
     }
 }
