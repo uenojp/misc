@@ -270,39 +270,65 @@ impl RandomScene {
 
         world.push(
             ShapeBuilder::new()
-                .lambertian(Color::new(0.5, 0.5, 0.5))
-                .sphere(Point3::new(0.0, -100.0, 0.0), 100.0)
+                .lambertian(Color::new(0.8, 0.8, 0.8))
+                .sphere(Point3::new(0.0, -1000.0, 0.0), 1000.0)
                 .build(),
         );
+
+        for x in -3..3 {
+            let x = x as f64;
+            for z in -3..3 {
+                let z = z as f64;
+                let [dx, choice, dz] = Float3::random().to_array();
+
+                let center = Point3::new(x + -3.0 * dx, 0.5, z + 6.0 * dz);
+                let sphere = if (0.0..0.8).contains(&choice) {
+                    let albedo = Float3::random();
+                    ShapeBuilder::new()
+                        .lambertian(albedo)
+                        .sphere(center, 0.5)
+                        .build()
+                } else if (0.8..0.95).contains(&choice) {
+                    let albedo = Float3::random_limit(0.5, 1.0);
+                    let fuzz = Float3::random().x();
+                    ShapeBuilder::new()
+                        .metal(albedo, fuzz)
+                        .sphere(center, 0.5)
+                        .build()
+                } else {
+                    let ri = 2.2;
+                    ShapeBuilder::new()
+                        .dielectric(ri)
+                        .sphere(center, 0.5)
+                        .build()
+                };
+
+                world.push(sphere);
+            }
+        }
 
         world.push(
             ShapeBuilder::new()
                 .dielectric(2.5)
-                .sphere(Point3::new(-1.3, 1.0, -7.0), 1.5)
+                .sphere(Point3::new(-2.3, 2.0, 4.0), 2.0)
                 .build(),
         );
         world.push(
             ShapeBuilder::new()
-                .lambertian(Float3::new(1.0, 0.2, 0.1))
-                .sphere(Point3::new(0.0, 1.0, -10.0), 1.0)
+                .lambertian(Float3::new(1.0, 0.2, 0.2))
+                .sphere(Point3::new(3.0, 1.0, 2.5), 1.0)
                 .build(),
         );
         world.push(
             ShapeBuilder::new()
-                .lambertian(Color::new(0.4, 0.2, 1.0))
-                .sphere(Point3::new(3.0, 1.0, -7.0), 1.0)
-                .build(),
-        );
-        world.push(
-            ShapeBuilder::new()
-                .lambertian(Color::new(0.4, 0.2, 0.1))
-                .sphere(Point3::new(-4.0, 1.0, -6.0), 1.0)
+                .lambertian(Color::new(0.4, 0.4, 0.4))
+                .sphere(Point3::new(4.0, 1.5, 1.0), 1.5)
                 .build(),
         );
         world.push(
             ShapeBuilder::new()
                 .metal(Color::new(0.7, 0.6, 0.5), 0.0)
-                .sphere(Point3::new(4.0, 1.0, -8.0), 1.0)
+                .sphere(Point3::new(6.0, 1.5, 4.0), 1.5)
                 .build(),
         );
 
@@ -317,10 +343,12 @@ impl RandomScene {
 
 impl SceneWithDepth for RandomScene {
     fn camera(&self) -> Camera {
-        Camera::new(
-            Vec3::new(16.0, 0.0, 0.0),
-            Vec3::new(0.0, 8.0, 0.0),
-            Vec3::new(-8.0, -4.0, -10.0),
+        Camera::from_lookat(
+            Point3::new(0.0, 2.0, 12.0),
+            Point3::zero(),
+            Vec3::yaxis(),
+            50.0,
+            self.aspect(),
         )
     }
 
