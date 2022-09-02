@@ -5,7 +5,7 @@ use crate::{Camera, Color, Point3, Ray};
 use image::{ImageResult, Rgb, RgbImage};
 use rayon::prelude::*;
 
-const SAMPLE_PER_PIXEL: usize = 100;
+const SAMPLE_PER_PIXEL: usize = 50;
 const GAMMA_FACTOR: f64 = 2.2;
 const MAX_RAY_BOUNCE_DEPTH: usize = 50;
 
