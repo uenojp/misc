@@ -8,7 +8,7 @@ use rayt::{render_aa_width_depth, Camera, Color, Float3, Point3, Ray, SceneWithD
 
 use material::{Dielectric, Lambertian, Material, Metal};
 use shape::{HitInfo, Shape, Sphere};
-use texture::{ColorTexture, Texture};
+use texture::{ColorTexture, DummyTexture, Texture};
 
 struct ShapeList {
     objects: Vec<Box<dyn Shape>>,
@@ -83,14 +83,25 @@ impl<S: Shape + 'static, M: Material, T: Texture> ShapeBuilder<S, M, T> {
 }
 
 impl<ShapeType, MaterialType, TextureType> ShapeBuilder<ShapeType, MaterialType, TextureType> {
-    fn color_texture(
-        self,
-        color: Color,
-    ) -> ShapeBuilder<ShapeType, MaterialType, ColorTexture> {
+    fn color_texture(self, color: Color) -> ShapeBuilder<ShapeType, MaterialType, ColorTexture> {
         ShapeBuilder {
             shape: self.shape,
             material: self.material,
             texture: ColorTexture::new(color),
+        }
+    }
+
+    // DielectricはTextureを必要としないので、例外的
+    // ここにdielectricを持ってくると、new().dielectric().build()ができる
+    // Materialを満たす型はlambertain、metalのとこに持ってく方がコードは読みやすい
+    // しかし、下に持っていくとnew().color_texture().dielectric().build()のように
+    // Textureの情報を必要としないのにcolor_textureを呼ばなければならない
+    // もう1案として、new().no_color().dielectric().build()にようにする
+    fn dielectric(self, ri: f64) -> ShapeBuilder<ShapeType, Dielectric, DummyTexture> {
+        ShapeBuilder {
+            shape: self.shape,
+            material: Dielectric::new(ri),
+            texture: DummyTexture,
         }
     }
 }
@@ -111,14 +122,6 @@ impl<ShapeType, MaterialType, T: Texture + Clone> ShapeBuilder<ShapeType, Materi
             texture: self.texture,
         }
     }
-
-    // fn dielectric(self, ri: f64) -> ShapeBuilder<ShapeType, Dielectric, T> {
-    //     ShapeBuilder {
-    //         shape: self.shape,
-    //         material: Dielectric::new(ri),
-    //         texture: self.texture,
-    //     }
-    // }
 }
 
 impl<ShapeType, M: Material + Clone, T: Texture + Clone> ShapeBuilder<ShapeType, M, T> {
@@ -153,7 +156,6 @@ impl<ShapeType, M: Material + Clone, T: Texture + Clone> ShapeBuilder<ShapeType,
 //     .dielectric(2.1);
 //     .build();
 
-
 struct RandomScene {
     world: ShapeList,
 }
@@ -177,12 +179,12 @@ impl RandomScene {
                 .sphere(Point3::new(-6.0, 3.0, 0.0), 3.0)
                 .build(),
         );
-        // world.push(
-        //     ShapeBuilder::new()
-        //         .dielectric(1.5)
-        //         .sphere(Point3::new(0.0, 3.0, 0.0), 3.0)
-        //         .build(),
-        // );
+        world.push(
+            ShapeBuilder::new()
+                .dielectric(1.5)
+                .sphere(Point3::new(0.0, 3.0, 0.0), 3.0)
+                .build(),
+        );
         world.push(
             ShapeBuilder::new()
                 .color_texture(Color::new(0.8, 0.8, 0.8))

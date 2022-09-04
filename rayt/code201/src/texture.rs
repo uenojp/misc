@@ -20,3 +20,12 @@ impl Texture for ColorTexture {
         self.color
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct DummyTexture;
+
+impl Texture for DummyTexture {
+    fn value(&self, u: f64, v: f64, p: Point3) -> Color {
+        panic!("called DummyTexture");
+    }
+}
