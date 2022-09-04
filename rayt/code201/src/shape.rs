@@ -6,6 +6,7 @@ pub trait Shape: Sync {
     fn hit(&self, ray: &Ray, t0: f64, t1: f64) -> Option<HitInfo>;
 }
 
+#[derive(Debug, Clone)]
 pub struct Sphere<M: Material> {
     center: Point3,
     radius: f64,

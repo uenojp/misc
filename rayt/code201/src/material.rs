@@ -7,6 +7,7 @@ pub trait Material: Sync + Send {
     fn scatter(&self, ray: &Ray, hit: &HitInfo) -> Option<ScatterInfo>;
 }
 
+#[derive(Debug, Clone)]
 pub struct Lambertian<T: Texture> {
     albedo: T,
 }
@@ -32,6 +33,7 @@ impl Material for Lambertian<ColorTexture> {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Metal<T: Texture> {
     albedo: T,
     fuzz: f64,
@@ -56,6 +58,7 @@ impl Material for Metal<ColorTexture> {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Dielectric {
     ri: f64,
 }

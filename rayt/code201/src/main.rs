@@ -1,3 +1,5 @@
+#![allow(dead_code, unused)]
+
 mod material;
 mod shape;
 mod texture;
@@ -38,66 +40,119 @@ impl Shape for ShapeList {
     }
 }
 
-struct ShapeBuilder<M: Material, T: Texture> {
-    shape: Option<Box<dyn Shape>>,
-    material: Option<M>,
-    texture: Option<T>,
+// NG
+// the trait bound `MaterialType: material::Material` is not satisfied
+// the trait `material::Material` is not implemented for `MaterialType`
+//
+// impl<ShapeType, MaterialType, TextureType> ShapeBuilder<ShapeType, MaterialType, TextureType> {
+//     fn sphere(
+//         mut self,
+//         center: Point3,
+//         radius: f64,
+//     ) -> ShapeBuilder<Sphere<MaterialType>, MaterialType, TextureType> {
+//         ShapeBuilder {
+//             shape: Sphere::new(center, radius, self.material),
+//             material: self.material,
+//             texture: self.texture,
+//         }
+//     }
+// }
+
+// Builder pattern
+// ref. https://keens.github.io/blog/2017/02/09/rustnochottoyarisuginabuilderpata_n/
+struct ShapeBuilder<ShapeType, MaterialType, TextureType> {
+    shape: ShapeType,
+    material: MaterialType,
+    texture: TextureType,
 }
 
-impl<M: Material + 'static, T: Texture + 'static> ShapeBuilder<M, T> {
+impl ShapeBuilder<(), (), ()> {
     fn new() -> Self {
         Self {
-            shape: None,
-            material: None,
-            texture: None,
+            shape: (),
+            material: (),
+            texture: (),
+        }
+    }
+}
+
+impl<S: Shape + 'static, M: Material, T: Texture> ShapeBuilder<S, M, T> {
+    fn build(self) -> Box<dyn Shape> {
+        Box::new(self.shape)
+    }
+}
+
+impl<ShapeType, MaterialType, TextureType> ShapeBuilder<ShapeType, MaterialType, TextureType> {
+    fn color_texture(
+        self,
+        color: Color,
+    ) -> ShapeBuilder<ShapeType, MaterialType, ColorTexture> {
+        ShapeBuilder {
+            shape: self.shape,
+            material: self.material,
+            texture: ColorTexture::new(color),
+        }
+    }
+}
+
+impl<ShapeType, MaterialType, T: Texture + Clone> ShapeBuilder<ShapeType, MaterialType, T> {
+    fn lambertian(self) -> ShapeBuilder<ShapeType, Lambertian<T>, T> {
+        ShapeBuilder {
+            shape: self.shape,
+            material: Lambertian::new(self.texture.clone()),
+            texture: self.texture,
         }
     }
 
-    fn sphere(mut self, center: Point3, radius: f64) -> Self {
-        self.shape = Some(Box::new(Sphere::new(
-            center,
-            radius,
-            self.material.unwrap(),
-        )));
-        self.material = None;
-        self
+    fn metal(self, fuzz: f64) -> ShapeBuilder<ShapeType, Metal<T>, T> {
+        ShapeBuilder {
+            shape: self.shape,
+            material: Metal::new(self.texture.clone(), fuzz),
+            texture: self.texture,
+        }
     }
 
-    fn build(self) -> Box<dyn Shape> {
-        self.shape.unwrap()
+    // fn dielectric(self, ri: f64) -> ShapeBuilder<ShapeType, Dielectric, T> {
+    //     ShapeBuilder {
+    //         shape: self.shape,
+    //         material: Dielectric::new(ri),
+    //         texture: self.texture,
+    //     }
+    // }
+}
+
+impl<ShapeType, M: Material + Clone, T: Texture + Clone> ShapeBuilder<ShapeType, M, T> {
+    fn sphere(self, center: Point3, radius: f64) -> ShapeBuilder<Sphere<M>, M, T> {
+        ShapeBuilder {
+            shape: Sphere::new(center, radius, self.material.clone()),
+            material: self.material,
+            texture: self.texture,
+        }
     }
 }
 
-impl ShapeBuilder<Lambertian<ColorTexture>, ColorTexture> {
-    fn lambertian(mut self) -> Self {
-        self.material = Some(Lambertian::new(self.texture.clone().unwrap()));
-        self
-    }
+// Texture -> Material -> Shape の順を強制
+//
+// Ok
+// let o = ShapeBuilder::new()
+//     .color_texture(Color::new(1.0, 0.2, 0.2))
+//     .metal(2.1)
+//     .sphere(Point3::zero(), 1.0)
+//     .build();
+//
+// Error
+// Texture -> Material -> Shape の順でなければいけないが、TextureとMaterialの順が逆
+// let o = ShapeBuilder::new()
+//     .lambertian();
+//     .color_texture(Color::new(1.0, 0.2, 0.2))
+//
+// Error
+// Texture -> Material -> Shape の順でなければいけないが、Shapeがない
+// let o = ShapeBuilder::new()
+//     .color_texture(Color::new(1.0, 0.2, 0.2))
+//     .dielectric(2.1);
+//     .build();
 
-    fn color_texture(mut self, color: Color) -> Self {
-        self.texture = Some(ColorTexture::new(color));
-        self
-    }
-}
-
-impl ShapeBuilder<Metal<ColorTexture>, ColorTexture> {
-    fn metal(mut self, fuzz: f64) -> Self {
-        self.material = Some(Metal::new(self.texture.clone().unwrap(), fuzz));
-        self
-    }
-
-    fn color_texture(mut self, color: Color) -> Self {
-        self.texture = Some(ColorTexture::new(color));
-        self
-    }
-}
-
-impl ShapeBuilder<Dielectric, ColorTexture> {
-    fn dielectric(mut self, ri: f64) -> Self {
-        self.material = Some(Dielectric::new(ri));
-        self
-    }
-}
 
 struct RandomScene {
     world: ShapeList,
@@ -108,7 +163,7 @@ impl RandomScene {
         let mut world = ShapeList::new();
 
         world.push(
-            ShapeBuilder::<Lambertian<_>, _>::new()
+            ShapeBuilder::new()
                 .color_texture(Color::new(0.8, 0.8, 0.8))
                 .lambertian()
                 .sphere(Point3::new(0.0, -1000.0, 0.0), 1000.0)
@@ -116,20 +171,20 @@ impl RandomScene {
         );
 
         world.push(
-            ShapeBuilder::<Lambertian<_>, _>::new()
+            ShapeBuilder::new()
                 .color_texture(Color::new(1.0, 0.2, 0.2))
                 .lambertian()
                 .sphere(Point3::new(-6.0, 3.0, 0.0), 3.0)
                 .build(),
         );
+        // world.push(
+        //     ShapeBuilder::new()
+        //         .dielectric(1.5)
+        //         .sphere(Point3::new(0.0, 3.0, 0.0), 3.0)
+        //         .build(),
+        // );
         world.push(
             ShapeBuilder::new()
-                .dielectric(1.5)
-                .sphere(Point3::new(0.0, 3.0, 0.0), 3.0)
-                .build(),
-        );
-        world.push(
-            ShapeBuilder::<Metal<_>, _>::new()
                 .color_texture(Color::new(0.8, 0.8, 0.8))
                 .metal(0.4)
                 .sphere(Point3::new(6.0, 3.0, 0.0), 3.0)
