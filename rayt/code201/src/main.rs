@@ -69,15 +69,25 @@ impl<M: Material + 'static, T: Texture + 'static> ShapeBuilder<M, T> {
 }
 
 impl ShapeBuilder<Lambertian<ColorTexture>, ColorTexture> {
-    fn lambertian(mut self, albedo: Float3) -> Self {
-        self.material = Some(Lambertian::new(ColorTexture::new(albedo)));
+    fn lambertian(mut self) -> Self {
+        self.material = Some(Lambertian::new(self.texture.clone().unwrap()));
+        self
+    }
+
+    fn color_texture(mut self, color: Color) -> Self {
+        self.texture = Some(ColorTexture::new(color));
         self
     }
 }
 
 impl ShapeBuilder<Metal<ColorTexture>, ColorTexture> {
-    fn metal(mut self, albedo: Float3, fuzz: f64) -> Self {
-        self.material = Some(Metal::new(ColorTexture::new(albedo), fuzz));
+    fn metal(mut self, fuzz: f64) -> Self {
+        self.material = Some(Metal::new(self.texture.clone().unwrap(), fuzz));
+        self
+    }
+
+    fn color_texture(mut self, color: Color) -> Self {
+        self.texture = Some(ColorTexture::new(color));
         self
     }
 }
@@ -98,15 +108,17 @@ impl RandomScene {
         let mut world = ShapeList::new();
 
         world.push(
-            ShapeBuilder::new()
-                .lambertian(Color::new(0.8, 0.8, 0.8))
+            ShapeBuilder::<Lambertian<_>, _>::new()
+                .color_texture(Color::new(0.8, 0.8, 0.8))
+                .lambertian()
                 .sphere(Point3::new(0.0, -1000.0, 0.0), 1000.0)
                 .build(),
         );
 
         world.push(
-            ShapeBuilder::new()
-                .lambertian(Color::new(1.0, 0.2, 0.2))
+            ShapeBuilder::<Lambertian<_>, _>::new()
+                .color_texture(Color::new(1.0, 0.2, 0.2))
+                .lambertian()
                 .sphere(Point3::new(-6.0, 3.0, 0.0), 3.0)
                 .build(),
         );
@@ -117,8 +129,9 @@ impl RandomScene {
                 .build(),
         );
         world.push(
-            ShapeBuilder::new()
-                .metal(Color::new(0.2, 0.2, 1.0), 2.2)
+            ShapeBuilder::<Metal<_>, _>::new()
+                .color_texture(Color::new(0.8, 0.8, 0.8))
+                .metal(0.4)
                 .sphere(Point3::new(6.0, 3.0, 0.0), 3.0)
                 .build(),
         );
