@@ -15,6 +15,7 @@ class Symbol {
     };
 
     Symbol() : name(), type(SYM_TYPE_UNKOWN), addr(0) {}
+    Symbol(std::string name, SymbolType type, uint64_t addr) : name(name), type(type), addr(addr) {}
 
     std::string name;
     SymbolType type;
@@ -32,10 +33,18 @@ class Section {
     Section()
         : name(),
           type(SEC_TYPE_NONE),
-          binary(nullptr),
+          binary(NULL),
           virtual_memory_addrres(0),
           size(0),
-          bytes(nullptr) {}
+          bytes(NULL) {}
+    Section(std::string name, SectionType type, Binary *binary, uint64_t vma, uint64_t size,
+            uint8_t *bytes)
+        : name(name),
+          type(type),
+          binary(binary),
+          virtual_memory_addrres(vma),
+          size(size),
+          bytes(bytes) {}
 
     bool contains(uint64_t addr) {
         return (virtual_memory_addrres <= addr) && (addr - virtual_memory_addrres < size);
@@ -46,7 +55,7 @@ class Section {
     Binary *binary;
     uint64_t virtual_memory_addrres;
     uint64_t size;
-    uint8_t *bytes;
+    uint8_t *bytes; // Section content
 };
 
 class Binary {
