@@ -3,6 +3,7 @@
 // Matrix Market Format
 // https://math.nist.gov/MatrixMarket/formats.html
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -107,8 +108,10 @@ int read_mm_data(FILE* fp, uint32_t** coo_row_index, uint32_t** coo_col_index, d
             return -1;
         }
 
-        (*coo_row_index)[index] = i;
-        (*coo_col_index)[index] = j;
+        assert(i - 1 >= 0 && j - 1 >= 0);
+
+        (*coo_row_index)[index] = i - 1;
+        (*coo_col_index)[index] = j - 1;
         (*coo_value)[index] = value;
 
         index++;
