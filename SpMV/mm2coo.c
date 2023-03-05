@@ -1,3 +1,8 @@
+#pragma once
+
+// Matrix Market Format
+// https://math.nist.gov/MatrixMarket/formats.html
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,7 +11,7 @@
 
 #define MM_HEADER_LINE "%%MatrixMarket matrix coordinate real general"
 
-int read_mm_header(FILE* fp, uint32_t* n, uint32_t* nnz) {
+int read_mm_header(FILE* fp, uint32_t* nptr, uint32_t* nnzptr) {
     char* line = NULL;
     size_t len = 0;
     ssize_t nread = 0;
@@ -36,7 +41,7 @@ int read_mm_header(FILE* fp, uint32_t* n, uint32_t* nnz) {
     }
     line[nread - 1] = '\0';
 
-    // read rows, columns, entries
+    // read rows, columns and entries
     // format: '<rows> <columns> <entries>'
     char* endptr;
     uint32_t n1 = 0;
@@ -66,14 +71,14 @@ int read_mm_header(FILE* fp, uint32_t* n, uint32_t* nnz) {
         return -1;
     }
 
-    *n = n1;
-    *nnz = entries;
+    *nptr = n1;
+    *nnzptr = entries;
 
     return 0;
 }
 
-int mm2coo(FILE* fp, uint32_t* coo_row_index, uint32_t* coo_col_index, double* coo_val,
-           uint32_t nnz) {
+int read_mm_data(FILE* fp, uint32_t** coo_row_index, uint32_t** coo_col_index, double** coo_value,
+                 uint32_t nnz) {
     char* line = NULL;
     size_t len = 0;
     ssize_t nread = 0;
@@ -82,32 +87,29 @@ int mm2coo(FILE* fp, uint32_t* coo_row_index, uint32_t* coo_col_index, double* c
     while ((nread = getline(&line, &len, fp)) != EOF && index < nnz) {
         line[nread - 1] = '\0';
 
-        char* endptr;
-        uint32_t i = 0;
-        uint32_t j = 0;
-        double value = 0;
+        char* endptr = NULL;
 
-        i = (uint32_t)strtol(line, &endptr, 10);
+        const uint32_t i = (uint32_t)strtol(line, &endptr, 10);
         if (*endptr != ' ') {
             fprintf(stderr, "invalid numeric data format: '%s'\n", line);
             return -1;
         }
 
-        j = (uint32_t)strtol(endptr + 1, &endptr, 10);
+        const uint32_t j = (uint32_t)strtol(endptr + 1, &endptr, 10);
         if (*endptr != ' ') {
             fprintf(stderr, "invalid numeric data format: '%s'\n", line);
             return -1;
         }
 
-        value = (double)strtod(endptr + 1, &endptr);
+        const double value = (double)strtod(endptr + 1, &endptr);
         if (*endptr != '\0') {
             fprintf(stderr, "invalid numeric data format: '%s'\n", line);
             return -1;
         }
 
-        coo_row_index[index] = i;
-        coo_col_index[index] = j;
-        coo_val[index] = value;
+        (*coo_row_index)[index] = i;
+        (*coo_col_index)[index] = j;
+        (*coo_value)[index] = value;
 
         index++;
     }
@@ -117,45 +119,47 @@ int mm2coo(FILE* fp, uint32_t* coo_row_index, uint32_t* coo_col_index, double* c
         fprintf(stderr, "mismatch between nnz and number of data\n");
         return -1;
     }
+}
+
+int mm2coo(const char* pathname, uint32_t** coo_row_index, uint32_t** coo_col_index,
+           double** coo_value, uint32_t* nptr, uint32_t* nnzptr) {
+    FILE* fp = NULL;
+
+    if ((fp = fopen(pathname, "r")) == NULL) {
+        perror("fopen");
+        return -1;
+    }
+
+    if (read_mm_header(fp, nptr, nnzptr) < 0) {
+        fprintf(stderr, "invalid Matrix Market header\n");
+        fclose(fp);
+        return -1;
+    }
+
+    uint32_t n = *nptr;
+    uint32_t nnz = *nnzptr;
+
+    *coo_row_index = (uint32_t*)malloc((size_t)nnz * sizeof(uint32_t));
+    *coo_col_index = (uint32_t*)malloc((size_t)nnz * sizeof(uint32_t));
+    *coo_value = (double*)malloc((size_t)nnz * sizeof(double));
+    if (!(*coo_row_index) || !(*coo_col_index) || !(*coo_value)) {
+        return -1;
+    }
+
+    if (read_mm_data(fp, coo_row_index, coo_col_index, coo_value, nnz) < 0) {
+        fprintf(stderr, "invalid Matrix Market data\n");
+        fclose(fp);
+        return -1;
+    }
+
+    fclose(fp);
 
     return 0;
 }
 
-void print_coo(uint32_t* coo_row_index, uint32_t* coo_col_index, double* coo_val, uint32_t nnz) {
+void print_coo(const uint32_t* coo_row_index, const uint32_t* coo_col_index, double* coo_value,
+               uint32_t nnz) {
     for (uint32_t i = 0; i < nnz; i++) {
-        printf("%d %d %lf\n", coo_row_index[i], coo_col_index[i], coo_val[i]);
+        printf("%d %d %lf\n", coo_row_index[i], coo_col_index[i], coo_value[i]);
     }
-}
-
-int main(int argc, char** argv) {
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s [Matrix Market File]\n", argv[0]);
-        exit(0);
-    }
-
-    FILE* fp = NULL;
-    uint32_t n = 0;
-    uint32_t nnz = 0;
-
-    if ((fp = fopen(argv[1], "r")) == NULL) {
-        perror("fopen");
-        exit(1);
-    }
-
-    if (read_mm_header(fp, &n, &nnz) < 0) {
-        fprintf(stderr, "fialed to read Matrix Market header\n");
-        exit(1);
-    }
-
-    printf("n: %d, nnz: %d\n", n, nnz);
-
-    uint32_t* coo_row_index = (uint32_t*)malloc((size_t)nnz * sizeof(uint32_t));
-    uint32_t* coo_col_index = (uint32_t*)malloc((size_t)nnz * sizeof(uint32_t));
-    double* coo_val = (double*)malloc((size_t)nnz * sizeof(double));
-
-    mm2coo(fp, coo_row_index, coo_col_index, coo_val, nnz);
-
-    print_coo(coo_row_index, coo_col_index, coo_val, nnz);
-
-    fclose(fp);
 }
