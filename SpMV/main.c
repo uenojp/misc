@@ -1,5 +1,5 @@
-#include "mm2coo.c"
 #include "coo2csr.c"
+#include "mm2coo.c"
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -18,6 +18,19 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    printf("n: %d, nnz: %d\n", n, nnz);
-    print_coo(coo_row_index, coo_col_index, coo_value, nnz);
+    // printf("n: %d, nnz: %d\n", n, nnz);
+    // print_coo(coo_row_index, coo_col_index, coo_value, nnz);
+
+    uint32_t* csr_row_ptr = NULL;
+    uint32_t* csr_col_index = NULL;
+    double* csr_value = NULL;
+
+    // NOTE: coo_* must be sorted by row
+    if (coo2csr(coo_row_index, coo_col_index, coo_value, &csr_row_ptr, &csr_col_index, &csr_value,
+                n, nnz) < 0) {
+        fprintf(stderr, "failed to convert from COO to CSR\n");
+        exit(1);
+    }
+
+    print_csr(csr_row_ptr, csr_col_index, csr_value, n);
 }
