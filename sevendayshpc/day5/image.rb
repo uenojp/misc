@@ -1,5 +1,9 @@
 #!/bin/ruby
 
+# Copyright (c) https://github.com/kaityo256
+# https://github.com/kaityo256/sevendayshpc/blob/f2a2cc595ccbd768894cf9d5d148c56e13be65b8/day5/image.rb
+
+# NOTE:
 # apt install ruby-dev
 # gem install cairo
 require "cairo"
