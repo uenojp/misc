@@ -111,8 +111,8 @@ int main(int argc, char **argv) {
 
     std::size_t size = L / nprocess;
     std::vector<double> local(size + 2);
-    fixed_temperature(local, rank, nprocess);
-    // uniform_heating(local, rank, nprocess);
+    // fixed_temperature(local, rank, nprocess);
+    uniform_heating(local, rank, nprocess);
 
     MPI_Finalize();
 }

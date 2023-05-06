@@ -1,21 +1,22 @@
 #include <mpi.h>
 
 #include <cstdio>
+#include <cstddef>
 
-void process(const int i, const int rank) {
+void process(int i, int rank) {
     printf("rank: %d index: %d\n", rank, i);
 }
 
 int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
 
-    int rank = {};
-    int nproc = {};
+    int rank = -1;
+    int nproc = -1;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &nproc);
 
-    const std::size_t n = 100;
-    for (std::size_t i = rank; i < n; i += nproc) {
+    const size_t n = 100;
+    for (size_t i = rank; i < n; i += nproc) {
         process(i, rank);
     }
 

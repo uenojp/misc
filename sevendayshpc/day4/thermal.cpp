@@ -3,16 +3,17 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cstddef>
 
-const std::size_t L = 128;
-const std::size_t STEP = 10000;
-const std::size_t DUMP = 1000;
+const size_t L = 128;
+const size_t STEP = 10000;
+const size_t DUMP = 1000;
 
 void onestep(std::vector<double> &lattice, double h) {
     std::vector<double> pre_lattice(L);
     std::copy(lattice.begin(), lattice.end(), pre_lattice.begin());
 
-    for (std::size_t i = 1; i < L - 1; i++) {
+    for (size_t i = 1; i < L - 1; i++) {
         lattice[i] += h * (pre_lattice[i + 1] - 2 * pre_lattice[i] + pre_lattice[i - 1]);
     }
     lattice[0] += h * (pre_lattice[L - 1] - 2 * pre_lattice[0] + pre_lattice[1]);
@@ -23,12 +24,12 @@ void dump(std::vector<double> &data) {
     static int index = 0;
     char filename[256];
 
-    sprintf(filename, "data%03d.dat", index);
+    sprintf(filename, "thermal/data%03d.dat", index);
     std::cout << filename << std::endl;
 
     std::ofstream ofs(filename);
 
-    for (std::size_t i = 0; i < data.size(); i++) {
+    for (size_t i = 0; i < data.size(); i++) {
         ofs << i << " " << data[i] << std::endl;
     }
     index += 1;
@@ -38,7 +39,7 @@ void fixed_temperature(std::vector<double> &lattice) {
     const double h = 0.01;
     const double q = 1.0;
 
-    for (std::size_t i = 0; i < STEP; i++) {
+    for (size_t i = 0; i < STEP; i++) {
         onestep(lattice, h);
         lattice[L / 4] = q;
         lattice[3 * L / 4] = -q;
@@ -51,7 +52,7 @@ void uniform_heating(std::vector<double> &lattice) {
     const double h = 0.2;
     const double q = 1.0;
 
-    for (std::size_t i = 0; i < STEP; i++) {
+    for (size_t i = 0; i < STEP; i++) {
         onestep(lattice, h);
         for (auto &s : lattice) {
             s += q * h;
@@ -68,3 +69,4 @@ int main(int argc, char **argv) {
     fixed_temperature(lattice);
     // uniform_heating(lattice);
 }
+
