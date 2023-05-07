@@ -4,9 +4,6 @@
 #include <iostream>
 #include <vector>
 
-using int32_t = std::int32_t;
-using size_t = std::size_t;
-
 const int32_t L = 128;
 
 const size_t TOTAL_STEP = 20000;
@@ -18,16 +15,10 @@ const double Du = 0.05;
 const double Dv = 0.1;
 const double dt = 0.2;
 
-// const double F = 0.04;
-// const double k = 0.06;
-// const double Du = 0.005;
-// const double Dv = 0.01;
-// const double dt = 0.02;
-
 double laplacian(int32_t ix, int32_t iy, std::vector<double> const &v) {
     assert(ix >= 0 && iy >= 0);
 
-    double r = {};
+    double r = 0.0;
     r += v[(ix - 1) + (iy)*L];
     r += v[(ix + 1) + (iy)*L];
     r += v[(ix) + (iy - 1) * L];
@@ -107,3 +98,4 @@ int main(void) {
         }
     }
 }
+
