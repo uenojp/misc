@@ -11,3 +11,15 @@ proconio = "0.4.5"
 [[bin]]
 name = "1-meiro"
 path = "src/1-meiro.rs"
+
+[[bin]]
+name = "3-abc81b"
+path = "src/3-abc81b.rs"
+
+[[bin]]
+name = "3-abc51b"
+path = "src/3-abc51b.rs"
+
+[[bin]]
+name = "3-abc45c"
+path = "src/3-abc45c.rs"
