@@ -35,3 +35,15 @@ path = "src/5-knapsack1.rs"
 [[bin]]
 name = "5-edit_distance"
 path = "src/5-edit_distance.rs"
+
+[[bin]]
+name = "5-vacation"
+path = "src/5-vacation.rs"
+
+[[bin]]
+name = "5-frog2"
+path = "src/5-frog2.rs"
+
+[[bin]]
+name = "5-contest"
+path = "src/5-contest.rs"
