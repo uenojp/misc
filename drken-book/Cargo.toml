@@ -77,3 +77,7 @@ path = "src/7-agc9a.rs"
 [[bin]]
 name = "7-1"
 path = "src/7-1.rs"
+
+[[bin]]
+name = "7-abc131d"
+path = "src/7-abc131d.rs"
