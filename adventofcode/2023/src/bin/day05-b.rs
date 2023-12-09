@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 use std::io::{self, BufRead};
 
 type Map = Vec<(u64, u64, u64)>;
@@ -134,7 +136,7 @@ fn main() {
         .collect::<Vec<_>>();
 
     let lowest_location = seed_ranges
-        .chunks(2)
+        .par_chunks(2)
         .map(|range| (range[0]..(range[0] + range[1])))
         .flatten()
         .map(|x| almanac.map_category(MapKind::SeedToSoil, x))
