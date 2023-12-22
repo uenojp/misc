@@ -30,25 +30,31 @@ impl HandBid {
     }
 
     fn strength(&self) -> u32 {
-        if self.frequency.iter().any(|(_, &count)| count == 5) {
-            6
-        } else if self.frequency.iter().any(|(_, &count)| count == 4) {
-            5
-        } else if self.frequency.iter().any(|(_, &count)| count == 3)
-            && self.frequency.iter().any(|(_, &count)| count == 2)
-        {
-            4
-        } else if self.frequency.iter().any(|(_, &count)| count == 3) {
-            3
-        } else if self
+        let (&max_card, &max_count) = self
             .frequency
             .iter()
-            .filter(|(_, &count)| count == 2)
-            .count()
-            == 2
-        {
+            .max_by(|&(_, count1), &(_, count2)| count1.cmp(count2))
+            .unwrap_or((&'-', &0));
+
+        let second_count = self
+            .frequency
+            .iter()
+            .filter(|(&card, _)| card != max_card)
+            .map(|(_, &count)| count)
+            .max()
+            .unwrap_or(0);
+
+        if max_count == 5 {
+            6
+        } else if max_count == 4 {
+            5
+        } else if max_count == 3 && second_count == 2 {
+            4
+        } else if max_count == 3 {
+            3
+        } else if max_count == 2 && second_count == 2 {
             2
-        } else if self.frequency.iter().any(|(_, &count)| count == 2) {
+        } else if max_count == 2 {
             1
         } else {
             0
