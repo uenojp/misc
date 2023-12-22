@@ -19,37 +19,51 @@ impl HandBid {
         let bid = bid.parse::<u32>().unwrap();
 
         let mut frequency = HashMap::new();
+        let mut num_wildcards = 0;
         for c in hand.chars() {
-            *frequency.entry(c).or_insert(0) += 1;
+            if c == 'J' {
+                num_wildcards += 1;
+            } else {
+                *frequency.entry(c).or_insert(0) += 1;
+            }
         }
 
         Self {
             hand,
             bid,
             frequency,
+            num_wildcards,
         }
     }
 
     fn strength(&self) -> u32 {
-        if self.frequency.iter().any(|(_, &count)| count == 5) {
-            6
-        } else if self.frequency.iter().any(|(_, &count)| count == 4) {
-            5
-        } else if self.frequency.iter().any(|(_, &count)| count == 3)
-            && self.frequency.iter().any(|(_, &count)| count == 2)
-        {
-            4
-        } else if self.frequency.iter().any(|(_, &count)| count == 3) {
-            3
-        } else if self
+        let (&max_card, &max_count) = self
             .frequency
             .iter()
-            .filter(|(_, &count)| count == 2)
-            .count()
-            == 2
-        {
+            .max_by(|&(_, count1), &(_, count2)| count1.cmp(count2))
+            .unwrap_or((&'-', &0));
+        let mut max_count = max_count;
+        max_count += self.num_wildcards;
+
+        let second_count = self
+            .frequency
+            .iter()
+            .filter(|(&card, _)| card != max_card)
+            .map(|(_, &count)| count)
+            .max()
+            .unwrap_or(0);
+
+        if max_count == 5 {
+            6
+        } else if max_count == 4 {
+            5
+        } else if max_count == 3 && second_count == 2 {
+            4
+        } else if max_count == 3 {
+            3
+        } else if max_count == 2 && second_count == 2 {
             2
-        } else if self.frequency.iter().any(|(_, &count)| count == 2) {
+        } else if max_count == 2 {
             1
         } else {
             0
@@ -70,16 +84,16 @@ impl Ord for HandBid {
                     'A' => 12,
                     'K' => 11,
                     'Q' => 10,
-                    'J' => 9,
-                    'T' => 8,
-                    '9' => 7,
-                    '8' => 6,
-                    '7' => 5,
-                    '6' => 4,
-                    '5' => 3,
-                    '4' => 2,
-                    '3' => 1,
-                    '2' => 0,
+                    'T' => 9,
+                    '9' => 8,
+                    '8' => 7,
+                    '7' => 6,
+                    '6' => 5,
+                    '5' => 4,
+                    '4' => 3,
+                    '3' => 2,
+                    '2' => 1,
+                    'J' => 0,
                     _ => unreachable!(),
                 };
                 for (self_card, other_card) in self.hand.chars().zip(other.hand.chars()) {
