@@ -54,11 +54,9 @@ impl Simulator {
 
     fn simulate_one(&self, start: &str, navigation: &str) -> u64 {
         let mut step = 0;
-
         let mut state = start;
 
         for instruction in navigation.chars().cycle() {
-            // dbg!(format!("{start}: {state}"));
             match instruction {
                 'L' => state = &self.routes[state].0,
                 'R' => state = &self.routes[state].1,
