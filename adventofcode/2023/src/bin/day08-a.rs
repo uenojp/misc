@@ -11,10 +11,27 @@ struct Simulator {
 }
 
 impl Simulator {
-    fn new(lines: impl Iterator<Item = String>) -> Self {
+    fn parse(lines: impl Iterator<Item = String>) -> Self {
         Self {
-            routes: lines.map(|line| parse(&line)).collect::<HashMap<_, _>>(),
+            routes: lines
+                .map(|line| Self::parse_line(&line))
+                .collect::<HashMap<_, _>>(),
         }
+    }
+
+    fn parse_line(line: &str) -> (Node, (Node, Node)) {
+        let (from, to) = line
+            .split_once(" = ")
+            .map(|(from, to)| {
+                let (left, right) = to
+                    .trim_matches(|c| c == '(' || c == ')')
+                    .split_once(", ")
+                    .unwrap();
+                (from, (left, right))
+            })
+            .unwrap();
+
+        (String::from(from), (String::from(to.0), String::from(to.1)))
     }
 
     fn simulate(&self, navigation: &str) -> u64 {
@@ -39,25 +56,10 @@ impl Simulator {
     }
 }
 
-fn parse(line: &str) -> (Node, (Node, Node)) {
-    let (from, to) = line
-        .split_once(" = ")
-        .map(|(from, to)| {
-            let (left, right) = to
-                .trim_matches(|c| c == '(' || c == ')')
-                .split_once(", ")
-                .unwrap();
-            (from, (left, right))
-        })
-        .unwrap();
-
-    (String::from(from), (String::from(to.0), String::from(to.1)))
-}
-
 fn main() {
     let mut lines = io::stdin().lock().lines().map(Result::unwrap);
     let navigation = lines.next().unwrap();
     lines.next();
-    let simulator = Simulator::new(lines);
+    let simulator = Simulator::parse(lines);
     println!("{}", simulator.simulate(&navigation));
 }
