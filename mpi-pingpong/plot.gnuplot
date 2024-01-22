@@ -12,5 +12,5 @@ set xlabel "Data Size"
 set ylabel "Bandwidth (GB/s)"
 set format x "1x10^{%T}"
 
-plot "bandwidth.dat" using 1:3 with linespoints title 'Bandwidth'
+plot "bandwidth.dat" using 1:2 with linespoints title 'Bandwidth'
 
