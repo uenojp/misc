@@ -17,11 +17,11 @@ int main(int argc, char **argv) {
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
 
-    // PingPong each other with message sizes from 1B to 10GiB.
+    // PingPong each other with message sizes from 1B to 1GiB.
     const size_t from = 1L;
     const size_t to = 1L * 1024L * 1024L * 1024L;
 
-    for (size_t message_size_byte = from; message_size_byte < to; message_size_byte <<= 1) {
+    for (size_t message_size_byte = from; message_size_byte <= to; message_size_byte <<= 1) {
         // Prepare send/recv data.
         uint8_t *message = NULL;
 
