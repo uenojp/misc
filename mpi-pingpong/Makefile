@@ -12,7 +12,7 @@ plot: bandwidth.dat plot.gnuplot
 	gnuplot plot.gnuplot
 
 clean:
-	$(RM) $(PROGRAM) bandwidth.dat
+	$(RM) $(PROGRAM) bandwidth.dat bandwidth.pdf
 
 .PHONY: plot clean
 

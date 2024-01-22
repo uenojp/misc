@@ -46,8 +46,10 @@ int main(int argc, char **argv) {
         }
         const double end = MPI_Wtime();
 
+        MPI_Barrier(MPI_COMM_WORLD);
+
         if (rank == 0) {
-            printf("%ld %lf GB/s\n", message_size_byte, (double)message_size_byte / (end - start) / 2.0 / (1024.0 * 1024.0));
+            printf("%ld Byte %lf MiB/s\n", message_size_byte, (double)message_size_byte / (end - start) / 2.0 / (1024.0 * 1024.0));
         }
 
         free(message);
