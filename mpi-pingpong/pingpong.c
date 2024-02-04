@@ -37,12 +37,12 @@ int main(int argc, char **argv) {
         MPI_Status status;
 
         const double start = MPI_Wtime();
-        if (rank == 0) {
-            MPI_Send(message, message_size_byte, MPI_BYTE, 1, 0, MPI_COMM_WORLD);
-            MPI_Recv(message, message_size_byte, MPI_BYTE, 1, 1, MPI_COMM_WORLD, &status);
+        if (rank & 1) {
+            MPI_Send(message, message_size_byte, MPI_BYTE, 0, 0, MPI_COMM_WORLD);
+            MPI_Recv(message, message_size_byte, MPI_BYTE, 0, 1, MPI_COMM_WORLD, &status);
         } else {
-            MPI_Recv(message, message_size_byte, MPI_BYTE, 0, 0, MPI_COMM_WORLD, &status);
-            MPI_Send(message, message_size_byte, MPI_BYTE, 0, 1, MPI_COMM_WORLD);
+            MPI_Recv(message, message_size_byte, MPI_BYTE, 1, 0, MPI_COMM_WORLD, &status);
+            MPI_Send(message, message_size_byte, MPI_BYTE, 1, 1, MPI_COMM_WORLD);
         }
         const double end = MPI_Wtime();
 
